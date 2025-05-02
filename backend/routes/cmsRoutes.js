@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { AboutUs, ContactUs } = require("../models/CMSModel");
+const { AboutUs, ContactUs,Terms } = require("../models/CMSModel");
 
 // ✅ Add or Update About Us
 router.put("/about", async (req, res) => {
@@ -39,6 +39,27 @@ router.get("/contact", async (req, res) => {
   try {
     const contact = await ContactUs.findOne();
     res.status(200).json(contact || { email: "", phone: "", address: "" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ✅ Add or Update About Us
+router.put("/terms", async (req, res) => {
+  try {
+    const { content } = req.body;
+    const terms = await Terms.findOneAndUpdate({}, { content }, { upsert: true, new: true });
+    res.status(200).json({ message: "Terms updated", data: terms });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ✅ Get About Us
+router.get("/terms", async (req, res) => {
+  try {
+    const about = await Terms.findOne();
+    res.status(200).json(about || { content: "" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

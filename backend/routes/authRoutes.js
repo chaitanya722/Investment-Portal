@@ -97,23 +97,40 @@ router.get("/user/:id", async (req, res) => {
   }
 });
 
-// PUT API to update user details
+// PUT API to update user details or investments
 router.put("/user/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role, phone, pan } = req.body;
+    const { name, email, role, phone, pan, investment } = req.body;
 
-    // Validate that at least one field is provided
-    if (!name && !email && !role && !phone && !pan) {
+    // Build the update object dynamically
+    const updateFields = {};
+
+    if (name) updateFields.name = name;
+    if (email) updateFields.email = email;
+    if (role) updateFields.role = role;
+    if (phone) updateFields.phone = phone;
+    if (pan) updateFields.pan = pan;
+
+    // Allow updating investment if provided
+    if (investment) {
+      updateFields.investment = {};
+
+      if (typeof investment.totalInvestment === "number") {
+        updateFields.investment.totalInvestment = investment.totalInvestment;
+      }
+
+      if (Array.isArray(investment.records)) {
+        updateFields.investment.records = investment.records;
+      }
+    }
+
+    // Ensure at least one field is being updated
+    if (Object.keys(updateFields).length === 0) {
       return res.status(400).json({ message: "At least one field is required to update." });
     }
 
-    // Find the user and update the details
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { name, email, role, phone, pan },
-      { new: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(id, updateFields, { new: true });
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -324,12 +341,21 @@ router.post("/verify-otp", async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "1d" });
 
-    return res.json({ token, role: user.role });
+    return res.json({
+      token,
+      role: user.role,
+      user: {
+        _id: user._id,
+        email: user.email,
+        name: user.name, // include any other fields you might need
+      }
+    });
   } catch (error) {
     console.error("OTP verification error:", error);
     res.status(401).json({ message: "Invalid or expired OTP/session" });
   }
 });
+
 
 
 module.exports = router;
