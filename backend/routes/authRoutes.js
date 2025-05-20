@@ -98,6 +98,7 @@ router.get("/user/:id", async (req, res) => {
 });
 
 // PUT API to update user details or investments
+// PUT API to update user details or investments
 router.put("/user/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -112,20 +113,26 @@ router.put("/user/:id", async (req, res) => {
     if (phone) updateFields.phone = phone;
     if (pan) updateFields.pan = pan;
 
-    // Allow updating investment if provided
     if (investment) {
       updateFields.investment = {};
 
+      // Store totalInvestment if passed
       if (typeof investment.totalInvestment === "number") {
         updateFields.investment.totalInvestment = investment.totalInvestment;
       }
 
+      // Validate and assign each record, expecting todayValue optionally
       if (Array.isArray(investment.records)) {
-        updateFields.investment.records = investment.records;
+        const validatedRecords = investment.records.map((rec) => ({
+          ...rec,
+          todayValue: typeof rec.todayValue === "number"
+            ? rec.todayValue
+            : rec.investmentAmount || 0, // Default to investmentAmount if not provided
+        }));
+        updateFields.investment.records = validatedRecords;
       }
     }
 
-    // Ensure at least one field is being updated
     if (Object.keys(updateFields).length === 0) {
       return res.status(400).json({ message: "At least one field is required to update." });
     }
@@ -145,6 +152,7 @@ router.put("/user/:id", async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
+
 
 
 // DELETE API to remove a user

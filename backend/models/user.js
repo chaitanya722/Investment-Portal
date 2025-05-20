@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
     records: [
       {
         investmentAmount: Number,
+        todayValue: Number,
         returnMonth: String,
         installments: Number,
         planName: String,
