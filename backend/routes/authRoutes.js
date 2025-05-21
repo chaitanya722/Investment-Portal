@@ -115,7 +115,7 @@ router.put("/user/:id", async (req, res) => {
 
     if (investment) {
       updateFields.investment = {};
-
+  
       // Store totalInvestment if passed
       if (typeof investment.totalInvestment === "number") {
         updateFields.investment.totalInvestment = investment.totalInvestment;
@@ -363,6 +363,77 @@ router.post("/verify-otp", async (req, res) => {
     res.status(401).json({ message: "Invalid or expired OTP/session" });
   }
 });
+
+
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const otp = generateOTP();
+    otpStore[email] = otp;
+
+    // Send OTP via email
+    await transporter.sendMail({
+      from: "your-email@gmail.com",
+      to: email,
+      subject: "Reset Your Password - OTP",
+      text: `Your OTP for password reset is: ${otp}`,
+    });
+
+    // Generate temporary token valid for OTP verification
+    const tempToken = jwt.sign({ email }, TEMP_TOKEN_SECRET, { expiresIn: "5m" });
+
+    res.status(200).json({ message: "OTP sent to email", tempToken });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+router.post("/forgot-password/verify-otp", async (req, res) => {
+  const { email, otp, tempToken } = req.body;
+
+  try {
+    const decoded = jwt.verify(tempToken, TEMP_TOKEN_SECRET);
+    if (decoded.email !== email) return res.status(401).json({ message: "Invalid token" });
+
+    if (otpStore[email] !== otp) return res.status(400).json({ message: "Invalid OTP" });
+
+    // OTP verified, allow password reset
+    const resetToken = jwt.sign({ email }, TEMP_TOKEN_SECRET, { expiresIn: "10m" });
+
+    delete otpStore[email]; // Invalidate OTP after successful verification
+
+    res.status(200).json({ message: "OTP verified", resetToken });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid or expired token" });
+  }
+});
+
+router.post("/forgot-password/reset", async (req, res) => {
+  const { resetToken, newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(resetToken, TEMP_TOKEN_SECRET);
+    const { email } = decoded;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(401).json({ message: "Invalid or expired token" });
+  }
+});
+
 
 
 
