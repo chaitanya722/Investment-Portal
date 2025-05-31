@@ -98,7 +98,6 @@ router.get("/user/:id", async (req, res) => {
 });
 
 // PUT API to update user details or investments
-// PUT API to update user details or investments
 router.put("/user/:id", async (req, res) => {
   try {
     const { id } = req.params;

@@ -43,6 +43,7 @@ const apiKeyMiddleware = (req, res, next) => {
 
     next();
 };
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(apiKeyMiddleware);
 
@@ -52,7 +53,6 @@ app.use('/api/investment', investmentRoutes);
 app.use("/api/cms", cmsRoutes);
 app.use('/api/notifications', notificationRoute);
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Handle 404
 app.use((req, res) => {
