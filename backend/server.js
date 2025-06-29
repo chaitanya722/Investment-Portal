@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const investmentRoutes = require('./routes/investment');
 const cmsRoutes = require("./routes/cmsRoutes");
 const notificationRoute = require('./routes/notificationRoute');
+const maturityRoute = require('./routes/maturityRoute');
 
 const app = express();
 
@@ -52,6 +53,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/investment', investmentRoutes);
 app.use("/api/cms", cmsRoutes);
 app.use('/api/notifications', notificationRoute);
+app.use('/api/maturity', maturityRoute);
+
 
 
 // ✅ Handle 404
