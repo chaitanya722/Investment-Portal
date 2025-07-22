@@ -289,6 +289,31 @@ router.post("/user/:id/bonus", async (req, res) => {
   }
 });
 
+router.put(
+  "/:id/upload-profile-image",
+  upload.single("image"),
+  async (req, res) => {
+    try { 
+      const userId = req.params.id;
+      const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { profileImage: imageUrl },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      res.status(200).json({ message: "Image uploaded", imageUrl });
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 
 
 

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { AboutUs, ContactUs,Terms } = require("../models/CMSModel");
+const nodemailer = require("nodemailer");
 
 // ✅ Add or Update About Us
 router.put("/about", async (req, res) => {
@@ -62,6 +63,44 @@ router.get("/terms", async (req, res) => {
     res.status(200).json(about || { content: "" });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+
+router.post("/contactform", async (req, res) => {
+  const { name, email, message } = req.body;
+
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: "All fields are required." });
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Contact Us" <${process.env.EMAIL_USERNAME}>`,
+      to: "adityabirlamutualfundsunlife@gmail.com",
+      subject: `New message from ${name}`,
+      html: `
+        <h2>Contact Us Message</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong><br/>${message}</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Message sent successfully." });
+  } catch (err) {
+    console.error("Email error:", err);
+    res.status(500).json({ error: "Failed to send message." });
   }
 });
 

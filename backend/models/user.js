@@ -8,14 +8,17 @@ const userSchema = new mongoose.Schema({
   pan: { type: String, required: true },
   phone: { type: Number, required: true },
   role: { type: String, enum: ["admin", "user"], default: "user" },
-
+  profileImage: {
+    type: String,
+    default: ""
+  },
   investment: {
     totalInvestment: {
       type: Number,
       default: 0
     },
     records: [
-      {
+      { 
         investmentAmount: Number,
         todayValue: Number,
         returnMonth: String,

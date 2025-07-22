@@ -48,6 +48,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(apiKeyMiddleware);
 
+
 // ✅ Register Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/investment', investmentRoutes);
