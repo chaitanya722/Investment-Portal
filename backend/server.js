@@ -11,12 +11,18 @@ const maturityRoute = require('./routes/maturityRoute');
 
 const app = express();
 
-// ✅ Allow CORS
-app.use(cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-api-key"]
-}));
+app.use(
+    cors({
+      origin: ["http://localhost:3000", "https://opalms.vercel.app"], // your frontend URLs
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "x-api-key", 
+      ],
+      credentials: true, // if you're using cookies
+    })
+  );
 
 // ✅ Parse JSON body
 app.use(express.json());
@@ -64,7 +70,7 @@ app.use((req, res) => {
     res.status(404).json({ error: "Route not found" });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;
 
 mongoose.connect('mongodb+srv://chaitanya:pawar123@cluster0.lap6zh4.mongodb.net/myDatabase', {
     useNewUrlParser: true,
